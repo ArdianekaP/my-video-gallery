@@ -1,31 +1,88 @@
-// Di dalam fungsi yang render video (misal fetch /api/videos)
-// Tambahkan tombol di bawah setiap video:
-videoContainer.innerHTML += `
-    <div style="margin-bottom: 20px;">
-        <video width="320" controls>
-            <source src="/uploads/${file}" type="video/mp4">
-        </video>
-        <br>
-        <button onclick="hapusVideo('${file}')" style="color: red;">Hapus Video</button>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ardian Video Gallery</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; }
+        .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px; }
+        .video-card { background: white; padding: 10px; border-radius: 8px; shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        video { border-radius: 5px; background: #000; }
+        .btn-delete { color: white; background: red; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .upload-section { background: white; padding: 20px; margin: 20px auto; max-width: 400px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <h1>🎬 My Video Gallery</h1>
+
+    <div class="upload-section">
+        <h3>Upload Video Baru</h3>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="video" accept="video/mp4" required><br><br>
+            <input type="password" name="password" placeholder="Password Admin" required><br><br>
+            <button type="submit">Upload Sekarang</button>
+        </form>
     </div>
-`;
 
-// Fungsi hapusnya
-async function hapusVideo(filename) {
-    const pass = prompt("Masukkan Password Admin untuk menghapus:");
-    if (!pass) return;
+    <hr>
 
-    const response = await fetch('/delete-video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename, password: pass })
-    });
+    <div class="gallery" id="videoContainer">
+        </div>
 
-    const result = await response.json();
-    if (result.success) {
-        alert("Video berhasil dihapus!");
-        location.reload(); // Refresh halaman
-    } else {
-        alert("Gagal hapus: " + result.message);
-    }
-}
+    <script>
+        // Fungsi untuk mengambil daftar video dari server
+        async function loadVideos() {
+            const res = await fetch('/api/videos');
+            const videos = await res.json();
+            const container = document.getElementById('videoContainer');
+            container.innerHTML = '';
+
+            if (videos.length === 0) {
+                container.innerHTML = '<p>Belum ada video di gallery.</p>';
+                return;
+            }
+
+            videos.forEach(file => {
+                container.innerHTML += `
+                    <div class="video-card">
+                        <video width="300" controls>
+                            <source src="/uploads/${file}" type="video/mp4">
+                        </video>
+                        <br>
+                        <button class="btn-delete" onclick="hapusVideo('${file}')">Hapus Video</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Fungsi Hapus Video
+        async function hapusVideo(filename) {
+            const pass = prompt("Masukkan Password Admin untuk menghapus:");
+            if (!pass) return;
+
+            try {
+                const response = await fetch('/delete-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename, password: pass })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("Video berhasil dihapus!");
+                    loadVideos(); // Refresh daftar tanpa reload halaman
+                } else {
+                    alert("Gagal hapus: " + result.message);
+                }
+            } catch (err) {
+                alert("Terjadi kesalahan koneksi.");
+            }
+        }
+
+        // Jalankan fungsi load saat halaman dibuka
+        loadVideos();
+    </script>
+</body>
+</html>
