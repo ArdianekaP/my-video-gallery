@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Gallery Ardian</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 20px; }
+        .upload-box { background: #222; padding: 20px; border-radius: 10px; margin-bottom: 30px; border: 1px solid #444; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .video-card { background: #1e1e1e; padding: 10px; border-radius: 10px; border: 1px solid #333; }
+        video { width: 100%; border-radius: 5px; background: black; }
+        button { background: #fe2c55; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        input { padding: 8px; border-radius: 5px; border: 1px solid #444; background: #333; color: white; margin: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="upload-box">
+        <h1>🎥 Gallery Video Pribadi</h1>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="video" accept="video/*" required>
+            <input type="password" name="password" placeholder="Password Admin" required>
+            <button type="submit">UPLOAD</button>
+        </form>
+        <p style="font-size: 12px; color: #888;">Hanya admin yang punya password bisa upload.</p>
+    </div>
+
+    <div class="gallery" id="listVideo"></div>
+
+    <script>
+        fetch('/api/videos')
+            .then(res => res.json())
+            .then(videos => {
+                const div = document.getElementById('listVideo');
+                if(videos.length === 0) div.innerHTML = "<p>Belum ada video.</p>";
+                videos.reverse().forEach(v => {
+                    div.innerHTML += `
+                        <div class="video-card">
+                            <video src="/uploads/${v}" controls></video>
+                            <p style="font-size:11px; color:gray; margin-top:10px;">ID: ${v}</p>
+                        </div>
+                    `;
+                });
+            });
+    </script>
+</body>
+</html>
