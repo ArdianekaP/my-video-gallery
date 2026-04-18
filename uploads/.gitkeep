@@ -1,2 +1,7 @@
 node_modules/
 .env
+
+# Abaikan semua file di dalam folder uploads agar tidak dihapus saat deploy
+uploads/*
+# Tapi jangan abaikan file .gitkeep agar foldernya tetap ada di GitHub
+!.gitkeep
