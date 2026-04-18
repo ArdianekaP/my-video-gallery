@@ -132,7 +132,11 @@
                         <div class="ads-overlay" onclick="prosesIklan(event, '${videoId}')"></div>
                         <div class="loading-text">Menyiapkan video... (3 detik)</div>
                         <div class="video-title">${displayName}</div>
-                        <video id="${videoId}" controls><source src="/uploads/${file}" type="video/mp4"></video>
+                        
+                        <video id="${videoId}" controls preload="metadata">
+                            <source src="/uploads/${file}#t=0.5" type="video/mp4">
+                        </video>
+                        
                         <button class="btn-delete" onclick="hapusVideo('${file}')">Remove</button>
                     </div>`;
             });
