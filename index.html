@@ -5,29 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Archive</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #121212; color: white; text-align: center; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #121212; color: white; text-align: center; }
         .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 40px 20px 150px 20px; }
-        .video-card { background: #1e1e1e; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 320px; position: relative; }
-        .video-title { margin: 0 0 10px 0; font-size: 16px; color: #007bff; font-weight: bold; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        video { border-radius: 8px; background: #000; width: 100%; position: relative; z-index: 1; }
-        
-        /* Overlay transparan yang menutupi video */
-        .ads-overlay { 
-            position: absolute; top: 45px; left: 15px; 
-            width: calc(100% - 30px); height: 180px; 
-            z-index: 100; cursor: pointer; background: rgba(0,0,0,0);
-        }
-
-        /* Animasi loading kecil agar user tahu video akan diputar */
-        .loading-text { display: none; font-size: 12px; color: #aaa; margin-top: 5px; }
-
-        .btn-delete { position: relative; z-index: 101; color: #ff5555; background: none; border: 1px solid #ff5555; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 12px; }
+        .video-card { background: #1e1e1e; padding: 15px; border-radius: 12px; width: 320px; position: relative; }
+        .video-title { margin-bottom: 10px; font-size: 16px; color: #007bff; font-weight: bold; text-align: left; }
+        video { border-radius: 8px; width: 100%; background: #000; }
+        .ads-overlay { position: absolute; top: 45px; left: 15px; width: calc(100% - 30px); height: 180px; z-index: 100; cursor: pointer; background: rgba(0,0,0,0); }
+        .loading-text { display: none; font-size: 12px; color: #aaa; margin: 5px 0; }
+        .btn-delete { position: relative; z-index: 101; color: #ff5555; background: none; border: 1px solid #ff5555; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-top: 10px; }
         .upload-section { position: fixed; bottom: 20px; right: 20px; background: rgba(30, 30, 30, 0.95); padding: 15px; border-radius: 12px; border: 1px solid #333; width: 220px; text-align: left; z-index: 1000; backdrop-filter: blur(5px); }
         .upload-section input, .upload-section button { width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 4px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-
     <div style="padding-top: 30px;"><h2>📁 Video Archive</h2></div>
     <div class="gallery" id="videoContainer"></div>
 
@@ -42,21 +32,16 @@
     </div>
 
     <script>
-        // FUNGSI UTAMA: KLIK -> IKLAN -> TUNGGU 3 DETIK -> PUTAR VIDEO
         function prosesIklan(event, videoId) {
             const smartLink = "https://www.profitablecpmratenetwork.com/t2v3hgxv?key=173e8b7ec9146a87ccf987038e57f6f9";
             const videoElement = document.getElementById(videoId);
             const overlay = event.target;
-            const loadingMsg = overlay.nextElementSibling; // Ngambil elemen loading-text
+            const loadingMsg = overlay.nextElementSibling;
 
-            // 1. Buka Iklan Smartlink
             window.open(smartLink, '_blank');
-
-            // 2. Sembunyikan Overlay & Munculkan status loading
             overlay.style.display = 'none';
             if(loadingMsg) loadingMsg.style.display = 'block';
 
-            // 3. Jeda 3 Detik (3000ms) lalu Putar Video otomatis
             setTimeout(() => {
                 if(loadingMsg) loadingMsg.style.display = 'none';
                 videoElement.play(); 
@@ -68,11 +53,9 @@
             const videos = await res.json();
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
-
             videos.forEach((file, index) => {
                 const videoId = "vid-" + index;
                 const displayName = file.split(' - ').slice(0, -1).join(' - ') || "Untitled";
-                
                 container.innerHTML += `
                     <div class="video-card">
                         <div class="ads-overlay" onclick="prosesIklan(event, '${videoId}')"></div>
@@ -83,7 +66,6 @@
                     </div>`;
             });
         }
-
         async function hapusVideo(filename) {
             const pass = prompt("Admin Passphrase:");
             if (!pass) return;
@@ -96,8 +78,6 @@
         }
         loadVideos();
     </script>
-
     <script src="https://pl29180025.profitablecpmratenetwork.com/eb/39/25/eb39256009464b36f9b3fb16873b622c.js"></script>
-
 </body>
 </html>
