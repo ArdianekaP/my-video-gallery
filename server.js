@@ -4,19 +4,16 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+app.use(express.json()); // Supaya bisa baca data JSON
 app.use(express.urlencoded({ extended: true })); 
 
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
+if (!fs.existsSync(uploadDir)) { fs.mkdirSync(uploadDir); }
 
 app.use('/uploads', express.static(uploadDir));
 const upload = multer({ dest: 'uploads/' });
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 
 app.get('/api/videos', (req, res) => {
     fs.readdir(uploadDir, (err, files) => {
@@ -40,7 +37,23 @@ app.post('/upload', upload.single('video'), (req, res) => {
     });
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('Server Jalan di Port ' + PORT);
+// --- FITUR HAPUS VIDEO ---
+app.post('/delete-video', (req, res) => {
+    const { filename, password } = req.body;
+    const PASSWORD_ADMIN = "wahyuningsih";
+
+    if (password !== PASSWORD_ADMIN) {
+        return res.status(403).json({ success: false, message: "Password salah!" });
+    }
+
+    const filePath = path.join(uploadDir, filename);
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ success: false, message: "File tidak ditemukan" });
+    }
 });
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, '0.0.0.0', () => { console.log('Server Jalan di Port ' + PORT); });
