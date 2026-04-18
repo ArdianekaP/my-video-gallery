@@ -6,45 +6,95 @@
     <title>Video Archive</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #121212; color: white; text-align: center; }
-        .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 40px 20px 150px 20px; }
+        
+        /* Judul Atas */
+        .header-section { padding: 30px 0; }
+
+        /* Galeri Video */
+        .gallery { 
+            display: flex; flex-wrap: wrap; justify-content: center; 
+            gap: 20px; padding: 20px; 
+            min-height: 200px;
+        }
+
         .video-card { background: #1e1e1e; padding: 15px; border-radius: 12px; width: 320px; position: relative; }
         .video-title { margin-bottom: 10px; font-size: 16px; color: #007bff; font-weight: bold; text-align: left; }
         video { border-radius: 8px; width: 100%; background: #000; }
+        
+        /* Jebakan Iklan */
         .ads-overlay { position: absolute; top: 45px; left: 15px; width: calc(100% - 30px); height: 180px; z-index: 100; cursor: pointer; background: rgba(0,0,0,0); }
         .loading-text { display: none; font-size: 12px; color: #aaa; margin: 5px 0; }
         .btn-delete { position: relative; z-index: 101; color: #ff5555; background: none; border: 1px solid #ff5555; padding: 5px 10px; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-        .upload-section { position: fixed; bottom: 20px; right: 20px; background: rgba(30, 30, 30, 0.95); padding: 15px; border-radius: 12px; border: 1px solid #333; width: 220px; text-align: left; z-index: 1000; backdrop-filter: blur(5px); }
-        .upload-section input, .upload-section button { width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 4px; box-sizing: border-box; }
+
+        /* AREA UPLOAD DI PALING BAWAH (SCROLL KE BAWAH) */
+        .upload-container {
+            margin: 50px auto;
+            max-width: 400px;
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px dashed #333;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .upload-container h3 { margin-top: 0; color: #bbb; }
+        .upload-container input, .upload-container button { 
+            width: 100%; margin-bottom: 15px; padding: 12px; 
+            border-radius: 8px; border: 1px solid #444; 
+            background: #222; color: white; box-sizing: border-box;
+            font-size: 14px;
+        }
         
-        /* Gaya tambahan saat tombol loading */
+        .upload-container button { 
+            background: #007bff; border: none; font-weight: bold; cursor: pointer; 
+            transition: 0.3s;
+        }
+
         .btn-uploading { background: #444 !important; cursor: not-allowed !important; }
+
+        /* Footer Footer */
+        .footer-spacer { height: 100px; }
     </style>
 </head>
 <body>
-    <div style="padding-top: 30px;"><h2>📁 Video Archive</h2></div>
+
+    <div class="header-section">
+        <h2>📁 Video Archive</h2>
+    </div>
+
     <div class="gallery" id="videoContainer"></div>
 
-    <div class="upload-section">
+    <hr style="border: 0; border-top: 1px solid #333; margin: 50px 20px;">
+
+    <div class="upload-container">
         <h3 id="statusText">Admin Upload (Max 500MB)</h3>
         <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
-            <input type="text" name="title" placeholder="Judul Video" required>
+            <label style="display: block; text-align: left; font-size: 12px; margin-bottom: 5px; color: #888;">Judul Video:</label>
+            <input type="text" name="title" placeholder="Ketik judul video di sini..." required>
+            
+            <label style="display: block; text-align: left; font-size: 12px; margin-bottom: 5px; color: #888;">Pilih File (MP4):</label>
             <input type="file" name="video" accept="video/mp4" required>
-            <input type="password" name="password" placeholder="Pass Key" required>
-            <button type="submit" id="btnSubmit" style="background:#007bff; color:white; border:none; cursor:pointer;">Deploy Video</button>
+            
+            <label style="display: block; text-align: left; font-size: 12px; margin-bottom: 5px; color: #888;">Pass Key:</label>
+            <input type="password" name="password" placeholder="Masukkan password admin..." required>
+            
+            <button type="submit" id="btnSubmit">Deploy Video</button>
         </form>
     </div>
 
+    <div class="footer-spacer"></div>
+
     <script>
-        // Fitur Visual Loading saat Upload File Besar
         const uploadForm = document.getElementById('uploadForm');
         const btnSubmit = document.getElementById('btnSubmit');
         const statusText = document.getElementById('statusText');
 
+        // Loading saat upload
         uploadForm.onsubmit = function() {
             btnSubmit.disabled = true;
             btnSubmit.classList.add('btn-uploading');
-            btnSubmit.innerText = "Uploading... Please Wait";
-            statusText.innerText = "⏳ Sedang Mengirim File...";
+            btnSubmit.innerText = "⏳ Sedang Mengirim File (Sabar ya)...";
+            statusText.innerText = "Processing Upload...";
             statusText.style.color = "#007bff";
         };
 
@@ -69,6 +119,11 @@
             const videos = await res.json();
             const container = document.getElementById('videoContainer');
             container.innerHTML = '';
+            
+            if (videos.length === 0) {
+                container.innerHTML = '<p style="color: #555;">Belum ada video di archive.</p>';
+            }
+
             videos.forEach((file, index) => {
                 const videoId = "vid-" + index;
                 const displayName = file.split(' - ').slice(0, -1).join(' - ') || "Untitled";
@@ -96,6 +151,7 @@
 
         loadVideos();
     </script>
+
     <script src="https://pl29180025.profitablecpmratenetwork.com/eb/39/25/eb39256009464b36f9b3fb16873b622c.js"></script>
 </body>
 </html>
