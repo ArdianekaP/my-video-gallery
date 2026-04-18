@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-app.use(express.json()); // Supaya bisa baca data JSON
+app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 
 const uploadDir = path.join(__dirname, 'uploads');
@@ -23,14 +23,24 @@ app.get('/api/videos', (req, res) => {
     });
 });
 
+// --- FITUR UPLOAD DENGAN JUDUL ---
 app.post('/upload', upload.single('video'), (req, res) => {
     const PASSWORD_ADMIN = "wahyuningsih"; 
+    const videoTitle = req.body.title || "Video Tanpa Judul"; // Mengambil judul dari input "title"
+
     if (req.body.password !== PASSWORD_ADMIN) {
         if (req.file) fs.unlinkSync(req.file.path);
         return res.status(403).send("<h1>Password Salah!</h1><a href='/'>Kembali</a>");
     }
+    
     if (!req.file) return res.send('Pilih video dulu!');
-    const targetPath = path.join(uploadDir, Date.now() + ".mp4");
+
+    // Membersihkan judul dari karakter yang dilarang oleh sistem file
+    const cleanTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
+    
+    // Nama file digabung: Judul - Timestamp.mp4
+    const targetPath = path.join(uploadDir, cleanTitle + " - " + Date.now() + ".mp4");
+
     fs.rename(req.file.path, targetPath, err => {
         if (err) return res.send("Gagal simpan.");
         res.send('<h2>Upload Berhasil!</h2><a href="/">Kembali</a>');

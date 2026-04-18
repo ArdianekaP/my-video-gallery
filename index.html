@@ -12,9 +12,9 @@
             gap: 20px; padding: 40px 20px 120px 20px;
         }
 
-        .video-card { background: #1e1e1e; padding: 10px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.3s; }
-        .video-card:hover { transform: translateY(-5px); }
-        video { border-radius: 8px; background: #000; width: 100%; max-width: 320px; }
+        .video-card { background: #1e1e1e; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 320px; }
+        .video-title { margin: 0 0 10px 0; font-size: 16px; color: #007bff; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+        video { border-radius: 8px; background: #000; width: 100%; }
 
         .btn-delete { color: #ff5555; background: none; border: 1px solid #ff5555; padding: 5px 10px; 
                       border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 12px; }
@@ -50,6 +50,7 @@
     <div class="upload-section">
         <h3>Admin Upload</h3>
         <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="text" name="title" placeholder="Judul Video" required>
             <input type="file" name="video" accept="video/mp4" required>
             <input type="password" name="password" placeholder="Pass Key" required>
             <button type="submit">Deploy Video</button>
@@ -70,8 +71,12 @@
                 }
 
                 videos.forEach(file => {
+                    // Ambil nama judul dari nama file (membuang timestamp)
+                    const displayName = file.split(' - ').slice(0, -1).join(' - ') || "Untitled Video";
+
                     container.innerHTML += `
                         <div class="video-card">
+                            <div class="video-title">${displayName}</div>
                             <video controls>
                                 <source src="/uploads/${file}" type="video/mp4">
                             </video>
