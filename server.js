@@ -4,16 +4,20 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true, limit: '100mb' })); // Dukung data besar
+
+// --- SET LIMIT 500MB AGAR EKSPRES BISA TERIMA DATA BESAR ---
+app.use(express.json({ limit: '500mb' })); 
+app.use(express.urlencoded({ extended: true, limit: '500mb' })); 
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) { fs.mkdirSync(uploadDir); }
 
 app.use('/uploads', express.static(uploadDir));
+
+// --- SET LIMIT MULTER KE 500MB ---
 const upload = multer({ 
     dest: 'uploads/',
-    limits: { fileSize: 100 * 1024 * 1024 } // Batas upload 100MB
+    limits: { fileSize: 500 * 1024 * 1024 } // 500 Megabytes
 });
 
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
@@ -22,7 +26,7 @@ app.get('/api/videos', (req, res) => {
     fs.readdir(uploadDir, (err, files) => {
         if (err) return res.json([]);
         const videoFiles = files.filter(file => file.endsWith('.mp4'));
-        res.json(videoFiles.sort((a, b) => b.split(' - ')[1] - a.split(' - ')[1])); // Video terbaru di atas
+        res.json(videoFiles.sort((a, b) => b.split(' - ')[1] - a.split(' - ')[1]));
     });
 });
 
@@ -41,8 +45,8 @@ app.post('/upload', upload.single('video'), (req, res) => {
     const targetPath = path.join(uploadDir, `${cleanTitle} - ${Date.now()}.mp4`);
 
     fs.rename(req.file.path, targetPath, err => {
-        if (err) return res.send("Gagal simpan file.");
-        res.send('<h2>Upload Berhasil!</h2><a href="/">Kembali</a>');
+        if (err) return res.send("Gagal simpan file ke server.");
+        res.send('<h2>Upload Berhasil! (Limit 500MB Aktif)</h2><a href="/">Kembali</a>');
     });
 });
 
