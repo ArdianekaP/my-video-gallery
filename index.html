@@ -3,85 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ViralTerbaru</title>
+    <title>Media Archive</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f4f4; }
-        .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px; }
-        .video-card { background: white; padding: 10px; border-radius: 8px; shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        video { border-radius: 5px; background: #000; }
-        .btn-delete { color: white; background: red; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-        .upload-section { background: white; padding: 20px; margin: 20px auto; max-width: 400px; border-radius: 8px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #121212; color: white; text-align: center; }
+        
+        .gallery { 
+            display: flex; flex-wrap: wrap; justify-content: center; 
+            gap: 20px; padding: 40px 20px 120px 20px; /* Jarak bawah ditambah agar tidak tertutup menu upload */
+        }
+
+        .video-card { background: #1e1e1e; padding: 10px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.3s; }
+        .video-card:hover { transform: translateY(-5px); }
+        video { border-radius: 8px; background: #000; width: 100%; max-width: 320px; }
+
+        .btn-delete { color: #ff5555; background: none; border: 1px solid #ff5555; padding: 5px 10px; 
+                      border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 12px; }
+        .btn-delete:hover { background: #ff5555; color: white; }
+
+        /* AREA UPLOAD DI POJOK KANAN BAWAH */
+        .upload-section { 
+            position: fixed; bottom: 20px; right: 20px; 
+            background: rgba(30, 30, 30, 0.95); padding: 15px; 
+            border-radius: 12px; border: 1px solid #333;
+            width: 220px; text-align: left; box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
+            z-index: 1000; backdrop-filter: blur(5px);
+        }
+
+        .upload-section h3 { margin: 0 0 10px 0; font-size: 14px; color: #bbb; }
+        .upload-section input { width: 100%; margin-bottom: 8px; font-size: 12px; background: #222; color: white; border: 1px solid #444; padding: 5px; border-radius: 4px; box-sizing: border-box; }
+        .upload-section button { width: 100%; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .upload-section button:hover { background: #0056b3; }
+
+        /* Scrollbar biar keren */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>🎬 My Video Gallery</h1>
-
-    <div class="upload-section">
-        <h3>Upload Video Baru</h3>
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-            <input type="file" name="video" accept="video/mp4" required><br><br>
-            <input type="password" name="password" placeholder="Password Admin" required><br><br>
-            <button type="submit">Upload Sekarang</button>
-        </form>
+    <div style="padding-top: 30px;">
+        <h2 id="pageTitle">📁 Video Archive</h2>
     </div>
-
-    <hr>
 
     <div class="gallery" id="videoContainer">
         </div>
 
+    <div class="upload-section">
+        <h3>Admin Upload</h3>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="video" accept="video/mp4" required>
+            <input type="password" name="password" placeholder="Pass Key" required>
+            <button type="submit">Deploy Video</button>
+        </form>
+    </div>
+
     <script>
-        // Fungsi untuk mengambil daftar video dari server
         async function loadVideos() {
-            const res = await fetch('/api/videos');
-            const videos = await res.json();
-            const container = document.getElementById('videoContainer');
-            container.innerHTML = '';
+            try {
+                const res = await fetch('/api/videos');
+                const videos = await res.json();
+                const container = document.getElementById('videoContainer');
+                container.innerHTML = '';
 
-            if (videos.length === 0) {
-                container.innerHTML = '<p>Belum ada video di gallery.</p>';
-                return;
-            }
+                if (videos.length === 0) {
+                    container.innerHTML = '<p style="color: #777;">Archive is empty.</p>';
+                    return;
+                }
 
-            videos.forEach(file => {
-                container.innerHTML += `
-                    <div class="video-card">
-                        <video width="300" controls>
-                            <source src="/uploads/${file}" type="video/mp4">
-                        </video>
-                        <br>
-                        <button class="btn-delete" onclick="hapusVideo('${file}')">Hapus Video</button>
-                    </div>
-                `;
-            });
+                videos.forEach(file => {
+                    container.innerHTML += `
+                        <div class="video-card">
+                            <video controls>
+                                <source src="/uploads/${file}" type="video/mp4">
+                            </video>
+                            <br>
+                            <button class="btn-delete" onclick="hapusVideo('${file}')">Remove</button>
+                        </div>
+                    `;
+                });
+            } catch (err) { console.error("Gagal load video"); }
         }
 
-        // Fungsi Hapus Video
         async function hapusVideo(filename) {
-            const pass = prompt("Masukkan Password Admin untuk menghapus:");
+            const pass = prompt("Admin Passphrase:");
             if (!pass) return;
 
-            try {
-                const response = await fetch('/delete-video', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ filename, password: pass })
-                });
+            const response = await fetch('/delete-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename, password: pass })
+            });
 
-                const result = await response.json();
-                if (result.success) {
-                    alert("Video berhasil dihapus!");
-                    loadVideos(); // Refresh daftar tanpa reload halaman
-                } else {
-                    alert("Gagal hapus: " + result.message);
-                }
-            } catch (err) {
-                alert("Terjadi kesalahan koneksi.");
+            const result = await response.json();
+            if (result.success) {
+                loadVideos();
+            } else {
+                alert("Error: " + result.message);
             }
         }
 
-        // Jalankan fungsi load saat halaman dibuka
         loadVideos();
     </script>
 </body>
